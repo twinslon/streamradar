@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# StreamRadar
 
-## Getting Started
+Find out where any movie or series is streaming — in your region.
 
-First, run the development server:
+Built with Next.js (App Router, Cache Components), TypeScript, and Tailwind CSS.
+Movie metadata and streaming availability come from [TMDB](https://www.themoviedb.org)
+(availability data by [JustWatch](https://www.justwatch.com)).
+
+> This product uses the TMDB API but is not endorsed or certified by TMDB.
+
+## Setup
+
+1. Create a free account at [themoviedb.org](https://www.themoviedb.org/signup).
+2. Request a Developer API key under [Settings → API](https://www.themoviedb.org/settings/api).
+3. Copy `.env.example` to `.env.local` and fill in your credentials
+   (`TMDB_READ_TOKEN` preferred, or `TMDB_API_KEY`).
+4. Start the dev server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## What it does (MVP)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Search** movies & series (TMDB multi-search)
+- **Title pages** with poster, backdrop, synopsis, rating, genres
+- **Where to watch**: streaming / rent / buy providers per watch region
+  (BG by default; switchable to US, GB, DE, FR, and more)
+- Popular titles on the landing page
+- All TMDB responses cached at the data level (`use cache`) to stay well
+  within rate limits
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Command       | Description              |
+| ------------- | ------------------------ |
+| `npm run dev` | Dev server (Turbopack)   |
+| `npm run build` | Production build       |
+| `npm run lint`  | ESLint                 |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Roadmap
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [ ] Browse by platform ("new on Netflix this month")
+- [ ] Nightly availability sync into SQLite (GitHub Action)
+- [ ] Personal watchlist
+- [ ] "Notify me when X arrives on platform Y" (Home Assistant integration)
+- [ ] Deploy on Cloudflare Pages / Vercel
