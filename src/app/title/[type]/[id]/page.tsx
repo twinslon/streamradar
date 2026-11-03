@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { RegionSelect } from "@/components/RegionSelect";
 import {
   getWatchProviders,
+  getCredits,
   getTitle,
   imageUrl,
   TmdbConfigError,
@@ -35,10 +36,12 @@ async function TitleContent({ params, searchParams }: TitlePageProps) {
 
   let details: TitleDetails;
   let watch: WatchInfo;
+  let credits: Awaited<ReturnType<typeof getCredits>>;
   try {
-    [details, watch] = await Promise.all([
+    [details, watch, credits] = await Promise.all([
       getTitle(mediaType, id),
       getWatchProviders(mediaType, id, region),
+      getCredits(mediaType, id),
     ]);
   } catch (error) {
     if (error instanceof TmdbConfigError) throw error;
@@ -109,6 +112,17 @@ async function TitleContent({ params, searchParams }: TitlePageProps) {
             <p className="mt-3 text-xs text-foreground/50">{details.genres.join(" · ")}</p>
           )}
 
+          {details.creators.length > 0 && (
+            <p className="mt-1 text-xs text-foreground/50">
+              Created by {details.creators.join(", ")}
+            </p>
+          )}
+          {credits.directors.length > 0 && (
+            <p className="mt-1 text-xs text-foreground/50">
+              Directed by {credits.directors.join(", ")}
+            </p>
+          )}
+
           {details.overview && (
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-foreground/80">
               {details.overview}
@@ -144,7 +158,56 @@ async function TitleContent({ params, searchParams }: TitlePageProps) {
           </p>
         )}
       </section>
+
+      {credits.cast.length > 0 && (
+        <section className="border-t border-white/10 p-4 sm:p-6">
+          <h2 className="text-lg font-semibold">Top billed cast</h2>
+          <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+            {credits.cast.map((member) => (
+              <CastCard key={member.id} member={member} />
+            ))}
+          </div>
+        </section>
+      )}
     </article>
+  );
+}
+
+function CastCard({
+  member,
+}: {
+  member: { id: number; name: string; character: string; profilePath: string | null };
+}) {
+  const profile = imageUrl(member.profilePath, "w185");
+  return (
+    <div className="w-24 shrink-0">
+      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-slate-800/60">
+        {profile ? (
+          <Image
+            src={profile}
+            alt={`Photo of ${member.name}`}
+            fill
+            sizes="96px"
+            className="object-cover"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-2xl text-foreground/20">
+            👤
+          </div>
+        )}
+      </div>
+      <p className="mt-1.5 truncate text-xs font-medium" title={member.name}>
+        {member.name}
+      </p>
+      {member.character && (
+        <p
+          className="truncate text-[11px] text-foreground/50"
+          title={member.character}
+        >
+          {member.character}
+        </p>
+      )}
+    </div>
   );
 }
 

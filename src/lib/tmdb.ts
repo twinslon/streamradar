@@ -42,6 +42,7 @@ export interface TitleDetails extends SearchResult {
   backdropPath: string | null;
   runtime: string | null;
   status: string | null;
+  creators: string[];
 }
 
 export interface Provider {
@@ -55,6 +56,18 @@ export interface WatchInfo {
   stream: Provider[];
   rent: Provider[];
   buy: Provider[];
+}
+
+export interface CastMember {
+  id: number;
+  name: string;
+  character: string;
+  profilePath: string | null;
+}
+
+export interface CreditsInfo {
+  cast: CastMember[];
+  directors: string[];
 }
 
 /** Build a TMDB image URL for a poster/backdrop/logo path. */
@@ -169,6 +182,7 @@ interface RawDetails {
   episode_run_time?: number[];
   number_of_seasons?: number;
   status?: string;
+  created_by?: { id: number; name: string }[];
 }
 
 /** Details for a single movie or series. */
@@ -206,6 +220,30 @@ export async function getTitle(type: MediaType, id: string): Promise<TitleDetail
     genres: raw.genres?.map((g) => g.name) ?? [],
     runtime,
     status: raw.status ?? null,
+    creators: raw.created_by?.map((c) => c.name) ?? [],
+  };
+}
+
+/** Top-billed cast + directors for a title. */
+export async function getCredits(type: MediaType, id: string): Promise<CreditsInfo> {
+  "use cache";
+  cacheLife("hours");
+
+  const data = await tmdbFetch<{
+    cast?: { id: number; name: string; character?: string; profile_path?: string | null }[];
+    crew?: { id: number; name: string; job?: string }[];
+  }>(`/${type}/${id}/credits`);
+
+  return {
+    cast: (data.cast ?? []).slice(0, 12).map((member) => ({
+      id: member.id,
+      name: member.name,
+      character: member.character ?? "",
+      profilePath: member.profile_path ?? null,
+    })),
+    directors: (data.crew ?? [])
+      .filter((member) => member.job === "Director")
+      .map((member) => member.name),
   };
 }
 
