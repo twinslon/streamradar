@@ -3,12 +3,14 @@ import Link from "next/link";
 import { SearchBox } from "@/components/SearchBox";
 import { RegionSelect } from "@/components/RegionSelect";
 import { TitleCard } from "@/components/TitleCard";
+import { ClassicCard } from "@/components/ClassicCard";
 import {
   getPopularTitles,
   normalizeRegion,
   searchTitles,
   TmdbConfigError,
 } from "@/lib/tmdb";
+import { searchClassicFilms, type ClassicFilm } from "@/lib/archive";
 
 export default function Home(props: PageProps<'/'>) {
   return (
@@ -96,7 +98,15 @@ async function Results({ searchParams }: Pick<PageProps<'/'>, "searchParams">) {
     );
   }
 
-  if (results.length === 0) {
+  // Free public-domain matches from the Internet Archive (best effort).
+  let classics: ClassicFilm[] = [];
+  try {
+    classics = await searchClassicFilms(query, 6);
+  } catch {
+    classics = [];
+  }
+
+  if (results.length === 0 && classics.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-foreground/50">
         Nothing found for “{query}”. Try another title.
@@ -105,15 +115,44 @@ async function Results({ searchParams }: Pick<PageProps<'/'>, "searchParams">) {
   }
 
   return (
+    <>
+      {results.length > 0 && (
+        <section>
+          <h2 className="mb-4 text-lg font-semibold text-foreground/80">
+            Results for “{query}”
+          </h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+            {results.map((item) => (
+              <TitleCard key={`${item.mediaType}-${item.id}`} item={item} region={region} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {results.length === 0 && resultsNote(query)}
+
+      {classics.length > 0 && (
+        <section className={results.length > 0 ? "mt-10" : ""}>
+          <h2 className="mb-4 text-lg font-semibold text-emerald-400/90">
+            🎞 Free classics matching “{query}”
+          </h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+            {classics.map((film) => (
+              <ClassicCard key={film.identifier} film={film} />
+            ))}
+          </div>
+        </section>
+      )}
+    </>
+  );
+}
+
+function resultsNote(query: string) {
+  return (
     <section>
-      <h2 className="mb-4 text-lg font-semibold text-foreground/80">
-        Results for “{query}”
-      </h2>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-        {results.map((item) => (
-          <TitleCard key={`${item.mediaType}-${item.id}`} item={item} region={region} />
-        ))}
-      </div>
+      <p className="text-sm text-foreground/50">
+        No streaming results for “{query}”.
+      </p>
     </section>
   );
 }

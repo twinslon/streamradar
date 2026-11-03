@@ -9,6 +9,7 @@ interface Suggestion {
   title: string;
   year: string | null;
   posterUrl: string | null;
+  archiveIdentifier: string | null;
 }
 
 const MIN_CHARS = 3;
@@ -77,7 +78,11 @@ export function SearchBox({
   function goTo(item: Suggestion) {
     setOpen(false);
     setQuery(item.title);
-    router.push(`/title/${item.mediaType}/${item.id}?region=${region}`);
+    if (item.archiveIdentifier) {
+      router.push(`/classics/${encodeURIComponent(item.archiveIdentifier)}`);
+    } else {
+      router.push(`/title/${item.mediaType}/${item.id}?region=${region}`);
+    }
   }
 
   function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
@@ -136,7 +141,15 @@ export function SearchBox({
             </li>
           )}
           {items.map((item, index) => (
-            <li key={`${item.mediaType}-${item.id}`} role="option" aria-selected={index === active}>
+            <li
+              key={
+                item.archiveIdentifier
+                  ? `archive-${item.archiveIdentifier}`
+                  : `${item.mediaType}-${item.id}`
+              }
+              role="option"
+              aria-selected={index === active}
+            >
               <button
                 type="button"
                 onMouseDown={(event) => event.preventDefault()}
@@ -161,6 +174,11 @@ export function SearchBox({
                   </span>
                 )}
                 <span className="min-w-0 flex-1 truncate text-sm">{item.title}</span>
+                {item.archiveIdentifier && (
+                  <span className="shrink-0 rounded bg-emerald-400/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-300">
+                    Free
+                  </span>
+                )}
                 <span className="shrink-0 text-xs text-foreground/40">
                   {item.year ?? "—"} · {item.mediaType === "movie" ? "Movie" : "Series"}
                 </span>

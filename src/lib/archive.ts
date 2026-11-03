@@ -91,11 +91,47 @@ async function iaSearch(
     .filter((film) => film.identifier.length > 0);
 }
 
+/**
+ * Filters the browse page to genuinely presentable classics: require a
+ * known year inside the classic era, and drop the exploitation flicks
+ * that pollute the downloads ranking ("Sex Madness" et al).
+ */
+function isPresentableClassic(film: ClassicFilm): boolean {
+  if (film.year === null || film.year < 1920 || film.year > 1975) return false;
+  const title = film.title.toLowerCase();
+  const BLOCKED = ["sex", "nudist", "nude", "naked", "molester", "erotica", "swingers"];
+  return !BLOCKED.some((term) => title.includes(term));
+}
+
 /** Popular public-domain feature films from the Internet Archive. */
 export async function getClassicFilms(page = 1): Promise<ClassicFilm[]> {
   "use cache";
   cacheLife("hours");
-  return iaSearch("collection:(feature_films) AND mediatype:(movies)", 24, page, "downloads desc");
+  const films = await iaSearch(
+    "collection:(feature_films) AND mediatype:(movies)",
+    40,
+    page,
+    "downloads desc",
+  );
+  return films.filter(isPresentableClassic).slice(0, 24);
+}
+
+/** Curated public-domain films matching a title query. */
+export async function searchClassicFilms(
+  query: string,
+  rows = 6,
+): Promise<ClassicFilm[]> {
+  "use cache";
+  cacheLife("hours");
+
+  const cleaned = query.replace(/["']/g, "").trim();
+  if (!cleaned) return [];
+  return iaSearch(
+    `(${PD_COLLECTION_QUERY}) AND title:("${cleaned}") AND mediatype:(movies)`,
+    rows,
+    1,
+    "downloads desc",
+  );
 }
 
 /** Metadata for a single archive.org item. */
