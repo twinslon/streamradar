@@ -40,6 +40,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           >
             JustWatch
           </a>
+          . Public-domain films streamed from the{" "}
+          <a
+            href="https://archive.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-foreground/60"
+          >
+            Internet Archive
+          </a>
           .
         </footer>
       </body>

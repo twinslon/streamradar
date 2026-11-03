@@ -14,6 +14,7 @@ import {
   type WatchInfo,
 } from "@/lib/tmdb";
 import { REGIONS, normalizeRegion } from "@/lib/regions";
+import { findArchiveCopy, type ArchiveMatch } from "@/lib/archive";
 
 type TitlePageProps = PageProps<'/title/[type]/[id]'>;
 
@@ -49,8 +50,23 @@ async function TitleContent({ params, searchParams }: TitlePageProps) {
     throw error;
   }
 
+  // Free public-domain copy on the Internet Archive (movies only, best effort).
+  let archive: ArchiveMatch | null = null;
+  if (mediaType === "movie") {
+    try {
+      archive = await findArchiveCopy(
+        details.title,
+        details.year ? Number.parseInt(details.year, 10) : null,
+      );
+    } catch {
+      archive = null;
+    }
+  }
+
   const regionName = REGIONS.find((r) => r.code === region)?.name ?? region;
-  const hasOffers = watch.stream.length + watch.rent.length + watch.buy.length > 0;
+  const hasOffers =
+    watch.stream.length + watch.rent.length + watch.buy.length > 0 ||
+    archive !== null;
   const backdrop = imageUrl(details.backdropPath, "w1280");
 
   return (
@@ -138,6 +154,20 @@ async function TitleContent({ params, searchParams }: TitlePageProps) {
 
         {hasOffers ? (
           <div className="mt-4 flex flex-col gap-4">
+            {archive && (
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="w-14 shrink-0 text-sm font-medium text-emerald-400/90">Free</span>
+                <a
+                  href={`https://archive.org/details/${encodeURIComponent(archive.identifier)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-xs font-medium text-emerald-300 transition hover:bg-emerald-400/20"
+                >
+                  🎞 Watch free on Internet Archive
+                  <span className="font-normal text-emerald-300/60">(public domain)</span>
+                </a>
+              </div>
+            )}
             <ProviderRow label="Stream" items={watch.stream} />
             <ProviderRow label="Rent" items={watch.rent} />
             <ProviderRow label="Buy" items={watch.buy} />

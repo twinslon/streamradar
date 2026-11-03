@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { SearchBar } from "@/components/SearchBar";
+import Link from "next/link";
+import { SearchBox } from "@/components/SearchBox";
 import { RegionSelect } from "@/components/RegionSelect";
 import { TitleCard } from "@/components/TitleCard";
 import {
@@ -24,6 +25,12 @@ export default function Home(props: PageProps<'/'>) {
         <Suspense fallback={<div className="h-11 w-full max-w-xl" />}>
           <HomeSearch searchParams={props.searchParams} />
         </Suspense>
+        <Link
+          href="/classics"
+          className="text-sm text-emerald-400/90 transition hover:text-emerald-300"
+        >
+          🎞 Browse classic cinema — free, public domain →
+        </Link>
       </section>
 
       <Suspense
@@ -50,7 +57,7 @@ async function HomeSearch({
   const { q, region } = await searchParams;
   return (
     <>
-      <SearchBar region={normalizeRegion(region)} defaultValue={typeof q === "string" ? q : undefined} />
+      <SearchBox region={normalizeRegion(region)} defaultValue={typeof q === "string" ? q : undefined} />
       <RegionSelect value={normalizeRegion(region)} />
     </>
   );
