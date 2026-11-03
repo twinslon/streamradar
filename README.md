@@ -2,6 +2,8 @@
 
 Find out where any movie or series is streaming — in your region.
 
+**Live: https://streamradar-eight.vercel.app** (pushes to `master` auto-deploy)
+
 Built with Next.js (App Router, Cache Components), TypeScript, and Tailwind CSS.
 Movie metadata and streaming availability come from [TMDB](https://www.themoviedb.org)
 (availability data by [JustWatch](https://www.justwatch.com)).
@@ -47,4 +49,3 @@ Open http://localhost:3000.
 - [ ] Nightly availability sync into SQLite (GitHub Action)
 - [ ] Personal watchlist
 - [ ] "Notify me when X arrives on platform Y" (Home Assistant integration)
-- [ ] Deploy on Cloudflare Pages / Vercel
