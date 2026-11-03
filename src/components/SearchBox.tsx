@@ -18,9 +18,12 @@ const DEBOUNCE_MS = 250;
 export function SearchBox({
   region,
   defaultValue,
+  action = "/",
 }: {
   region: string;
   defaultValue?: string;
+  /** Form submit target — "/" searches everything, "/classics" filters the classics catalog. */
+  action?: string;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState(defaultValue ?? "");
@@ -103,7 +106,7 @@ export function SearchBox({
 
   return (
     <div ref={boxRef} className="relative w-full max-w-xl">
-      <form action="/" className="flex w-full gap-2" role="search" aria-label="Search movies and series">
+      <form action={action} className="flex w-full gap-2" role="search" aria-label="Search movies and series">
         <input
           type="search"
           name="q"
