@@ -46,6 +46,8 @@ Open http://localhost:3000.
 ## Roadmap
 
 - [ ] Browse by platform ("new on Netflix this month")
-- [ ] Nightly availability sync into SQLite (GitHub Action)
-- [ ] Personal watchlist
+- [x] Nightly availability sync into SQLite (GitHub Action) — trending titles
+      × BG/US snapshotted daily; pages read the DB first, live TMDB as
+      fallback (`data-provider-source` marker on title pages shows which)
+- [ ] Personal watchlist (diffs over the nightly snapshots + notifications)
 - [ ] "Notify me when X arrives on platform Y" (Home Assistant integration)

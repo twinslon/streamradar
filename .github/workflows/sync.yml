@@ -1,0 +1,43 @@
+name: nightly-sync
+
+on:
+  schedule:
+    # 03:17 UTC daily — off the top of the hour to avoid cron rush
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Sync availability snapshots
+        run: node scripts/sync.mjs
+        env:
+          TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN }}
+          SYNC_REGIONS: BG,US
+
+      - name: Commit updated database
+        run: |
+          git config user.name "streamradar-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/streamradar.db
+          git diff --cached --quiet && echo "No changes to commit" || (
+            git commit -m "chore: nightly availability sync ($(date -u +%F))"
+            git push
+          )

@@ -13,6 +13,7 @@ import {
   type TitleDetails,
   type WatchInfo,
 } from "@/lib/tmdb";
+import { getStoredAvailability } from "@/lib/db";
 import { REGIONS, normalizeRegion } from "@/lib/regions";
 import { findArchiveCopy, type ArchiveMatch } from "@/lib/archive";
 
@@ -37,13 +38,21 @@ async function TitleContent({ params, searchParams }: TitlePageProps) {
 
   let details: TitleDetails;
   let watch: WatchInfo;
+  let watchSource: "db" | "tmdb" = "tmdb";
   let credits: Awaited<ReturnType<typeof getCredits>>;
   try {
-    [details, watch, credits] = await Promise.all([
+    // DB snapshot first (nightly sync); live TMDB fetch as fallback.
+    const stored = getStoredAvailability(mediaType, id, region);
+    [details, credits] = await Promise.all([
       getTitle(mediaType, id),
-      getWatchProviders(mediaType, id, region),
       getCredits(mediaType, id),
     ]);
+    if (stored) {
+      watch = stored;
+      watchSource = "db";
+    } else {
+      watch = await getWatchProviders(mediaType, id, region);
+    }
   } catch (error) {
     if (error instanceof TmdbConfigError) throw error;
     if (error instanceof Error && error.message.includes("404")) notFound();
@@ -147,7 +156,10 @@ async function TitleContent({ params, searchParams }: TitlePageProps) {
         </div>
       </div>
 
-      <section className="border-t border-white/10 p-4 sm:p-6">
+      <section
+        className="border-t border-white/10 p-4 sm:p-6"
+        data-provider-source={watchSource}
+      >
         <h2 className="text-lg font-semibold">
           Where to watch <span className="text-foreground/50">in {regionName}</span>
         </h2>

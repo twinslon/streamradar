@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# sqlite sidecar files (only the .db itself is committed)
+data/*.db-shm
+data/*.db-wal
