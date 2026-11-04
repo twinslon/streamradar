@@ -1,4 +1,5 @@
 import { WatchlistView } from "@/components/WatchlistView";
+import { SearchBox } from "@/components/SearchBox";
 
 export const metadata = {
   title: "My watchlist",
@@ -13,6 +14,9 @@ export default function WatchlistPage() {
           My watchlist
         </span>
       </h1>
+      <div className="mt-6">
+        <SearchBox region="BG" />
+      </div>
       <WatchlistView />
     </main>
   );

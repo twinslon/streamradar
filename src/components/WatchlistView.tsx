@@ -117,11 +117,19 @@ export function WatchlistView() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <p className="py-10 text-center text-sm text-foreground/50">
-          Your watchlist is empty — hit{" "}
-          <span className="text-foreground/80">＋ Add to watchlist</span> on any
-          title page.
-        </p>
+        <div className="flex flex-col items-center gap-4 py-10 text-center">
+          <p className="text-sm text-foreground/50">Your watchlist is empty.</p>
+          <Link
+            href="/"
+            className="rounded-xl bg-sky-500 px-5 py-2 text-sm font-semibold text-slate-950 transition hover:bg-sky-400"
+          >
+            Find something to watch →
+          </Link>
+          <p className="max-w-xs text-xs text-foreground/40">
+            Search above or on the home page, open any title, and hit{" "}
+            <span className="text-foreground/70">＋ Add to watchlist</span>.
+          </p>
+        </div>
       ) : (
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {items.map((item) => {
