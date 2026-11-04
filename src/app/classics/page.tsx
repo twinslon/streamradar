@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { ClassicCard } from "@/components/ClassicCard";
 import { SearchBox } from "@/components/SearchBox";
-import { RegionSelect } from "@/components/RegionSelect";
 import { searchClassicFilms, getClassicFilms, type ClassicFilm } from "@/lib/archive";
 import { normalizeRegion } from "@/lib/regions";
 
@@ -53,15 +52,14 @@ async function ClassicsSearch({
   searchParams,
 }: Pick<PageProps<'/classics'>, "searchParams">) {
   const { q, region } = await searchParams;
+  // No region selector here — Archive films are public domain and
+  // region-free. The region is only used for navigating TMDB suggestions.
   return (
-    <>
-      <SearchBox
-        action="/classics"
-        region={normalizeRegion(region)}
-        defaultValue={typeof q === "string" ? q : undefined}
-      />
-      <RegionSelect value={normalizeRegion(region)} />
-    </>
+    <SearchBox
+      action="/classics"
+      region={normalizeRegion(region)}
+      defaultValue={typeof q === "string" ? q : undefined}
+    />
   );
 }
 
