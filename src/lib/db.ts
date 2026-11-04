@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import path from "node:path";
+import fs from "node:fs";
 import type { MediaType, Provider, WatchInfo } from "./tmdb";
 
 const DB_PATH = path.join(process.cwd(), "data", "streamradar.db");
@@ -84,4 +85,22 @@ export function getStoredAvailability(
   } catch {
     return null;
   }
+}
+
+/** Diagnostics for the deployed filesystem context (temporary debugging aid). */
+export function getDbDebug(): {
+  cwd: string;
+  dataDirExists: boolean;
+  dbExists: boolean;
+  openResult: "ok" | "null" | "uninitialized";
+} {
+  const dir = path.join(process.cwd(), "data");
+  const file = path.join(DB_PATH);
+  const db = open();
+  return {
+    cwd: process.cwd(),
+    dataDirExists: fs.existsSync(dir),
+    dbExists: fs.existsSync(file),
+    openResult: db ? "ok" : db === null ? "null" : "uninitialized",
+  };
 }
