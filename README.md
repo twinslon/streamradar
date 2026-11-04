@@ -53,11 +53,14 @@ Done:
 - [x] "Recently changed on streaming" — daily diff of provider snapshots
 - [x] Public-domain classics section, searchable, with inline players
 - [x] Typeahead search across TMDB + Internet Archive
+- [x] Per-title SEO metadata + OG share images
+- [x] Classics pagination ("Popular with viewers" pages 1–20)
+- [x] sitemap.xml / robots.txt
 
 Next up:
-- [ ] Per-title SEO metadata + OG share images
-- [ ] Classics pagination + TMDB enrichment of player pages
+- [ ] TMDB enrichment of classics player pages (match IA film → TMDB entry
+      for cast, ratings, proper titles)
 - [ ] Generic notifications via browser web push (provider-agnostic)
 - [ ] Person pages (clickable cast filmographies)
 - [ ] Unit tests for the public-domain matching heuristics
-- [ ] sitemap.xml / robots.txt, PWA manifest, `/` search shortcut
+- [ ] PWA manifest, `/` search shortcut
