@@ -154,12 +154,7 @@ for (const t of titles) {
 
 db.prepare("DELETE FROM availability WHERE day < ?").run(daysAgo(KEEP_DAYS));
 
-console.log(`Provider snapshots written: ${written} (failed title lookups: ${failed})`);
-for (const row of db
-  .prepare(
-    "SELECT region, COUNT(DISTINCT tmdb_id) AS titles FROM availability WHERE day = ? GROUP BY region",
-  )
-  .all(today())) {
-  console.log(`  ${row.region}: ${row.titles} titles with data today`);
-}
+// Convert away from WAL so the committed single .db file opens cleanly
+// on read-only filesystems (no -shm/-wal sidecars needed at runtime).
+db.pragma("journal_mode = DELETE");
 db.close();

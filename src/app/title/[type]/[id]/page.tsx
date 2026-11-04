@@ -13,7 +13,7 @@ import {
   type TitleDetails,
   type WatchInfo,
 } from "@/lib/tmdb";
-import { getStoredAvailability, getDbDebug } from "@/lib/db";
+import { getStoredAvailability } from "@/lib/db";
 import { REGIONS, normalizeRegion } from "@/lib/regions";
 import { findArchiveCopy, type ArchiveMatch } from "@/lib/archive";
 
@@ -39,12 +39,10 @@ async function TitleContent({ params, searchParams }: TitlePageProps) {
   let details: TitleDetails;
   let watch: WatchInfo;
   let watchSource: "db" | "tmdb" = "tmdb";
-  let dbDebug: string | null = null;
   let credits: Awaited<ReturnType<typeof getCredits>>;
   try {
     // DB snapshot first (nightly sync); live TMDB fetch as fallback.
     const stored = getStoredAvailability(mediaType, id, region);
-    if (!stored) dbDebug = JSON.stringify(getDbDebug(mediaType, id, region));
     [details, credits] = await Promise.all([
       getTitle(mediaType, id),
       getCredits(mediaType, id),
@@ -161,7 +159,6 @@ async function TitleContent({ params, searchParams }: TitlePageProps) {
       <section
         className="border-t border-white/10 p-4 sm:p-6"
         data-provider-source={watchSource}
-        data-dbdebug={dbDebug}
       >
         <h2 className="text-lg font-semibold">
           Where to watch <span className="text-foreground/50">in {regionName}</span>

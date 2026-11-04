@@ -1,6 +1,5 @@
 import Database from "better-sqlite3";
 import path from "node:path";
-import fs from "node:fs";
 import type { MediaType, Provider, WatchInfo } from "./tmdb";
 
 const DB_PATH = path.join(process.cwd(), "data", "streamradar.db");
@@ -14,6 +13,9 @@ let handle: Handle | undefined;
 function open(): Handle {
   if (handle === undefined) {
     try {
+      // The sync script commits the db in DELETE journal mode, so a
+      // readonly open needs no -shm/-wal sidecars — safe on read-only
+      // serverless filesystems.
       handle = new Database(DB_PATH, { readonly: true, fileMustExist: true });
     } catch {
       handle = null;
@@ -85,54 +87,4 @@ export function getStoredAvailability(
   } catch {
     return null;
   }
-}
-
-/** Diagnostics for the deployed filesystem context (temporary debugging aid). */
-export function getDbDebug(type: MediaType, id: string, region: string): {
-  cwd: string;
-  dataDirExists: boolean;
-  dbExists: boolean;
-  openResult: "ok" | "null" | "uninitialized";
-  row: unknown;
-  today: string;
-  minDay: string;
-  error?: string;
-} {
-  const dir = path.join(process.cwd(), "data");
-  const file = path.join(DB_PATH);
-  const db = open();
-  const out: {
-    cwd: string;
-    dataDirExists: boolean;
-    dbExists: boolean;
-    openResult: "ok" | "null" | "uninitialized";
-    row: unknown;
-    today: string;
-    minDay: string;
-    error?: string;
-  } = {
-    cwd: process.cwd(),
-    dataDirExists: fs.existsSync(dir),
-    dbExists: fs.existsSync(file),
-    openResult: db ? "ok" : db === null ? "null" : "uninitialized",
-    row: null,
-    today: new Date().toISOString().slice(0, 10),
-    minDay: new Date(Date.now() - MAX_AGE_DAYS * 86400000)
-      .toISOString()
-      .slice(0, 10),
-  };
-  try {
-    if (db) {
-      out.row = db
-        .prepare(
-          `SELECT day, payload_json FROM availability
-           WHERE media_type = ? AND tmdb_id = ? AND region = ?
-           ORDER BY day DESC LIMIT 1`,
-        )
-        .get(type, Number(id), region);
-    }
-  } catch (error) {
-    out.error = error instanceof Error ? error.message : String(error);
-  }
-  return out;
 }
