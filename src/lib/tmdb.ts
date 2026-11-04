@@ -148,20 +148,17 @@ export async function searchTitles(query: string): Promise<SearchResult[]> {
     .filter((item): item is SearchResult => item !== null);
 }
 
-/** Popular movies + series for the landing page. */
-export async function getPopularTitles(): Promise<SearchResult[]> {
+/** Popular titles for the landing page, per media type. */
+export async function getPopularTitles(type: MediaType): Promise<SearchResult[]> {
   "use cache";
   cacheLife("hours");
 
-  const movies = await tmdbFetch<{
+  const data = await tmdbFetch<{
     results: Parameters<typeof normalizeSearchItem>[0][];
-  }>("/movie/popular");
-  const shows = await tmdbFetch<{
-    results: Parameters<typeof normalizeSearchItem>[0][];
-  }>("/tv/popular");
+  }>(`/${type}/popular`);
 
-  return [...movies.results, ...shows.results]
-    .map((raw) => normalizeSearchItem({ ...raw, media_type: raw.media_type ?? (raw.title ? "movie" : "tv") }))
+  return (data.results ?? [])
+    .map((raw) => normalizeSearchItem({ ...raw, media_type: type }))
     .filter((item): item is SearchResult => item !== null)
     .slice(0, 12);
 }

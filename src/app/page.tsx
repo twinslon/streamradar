@@ -71,18 +71,33 @@ async function Results({ searchParams }: Pick<PageProps<'/'>, "searchParams">) {
   const query = typeof q === "string" ? q.trim() : "";
 
   if (!query) {
-    const popular = await getPopularTitles();
+    const [movies, series] = await Promise.all([
+      getPopularTitles("movie"),
+      getPopularTitles("tv"),
+    ]);
     return (
-      <section>
-        <h2 className="mb-4 text-lg font-semibold text-foreground/80">
-          Popular right now
-        </h2>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {popular.map((item) => (
-            <TitleCard key={`${item.mediaType}-${item.id}`} item={item} region={region} />
-          ))}
-        </div>
-      </section>
+      <>
+        <section>
+          <h2 className="mb-4 text-lg font-semibold text-foreground/80">
+            Popular movies now
+          </h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+            {movies.map((item) => (
+              <TitleCard key={`${item.mediaType}-${item.id}`} item={item} region={region} />
+            ))}
+          </div>
+        </section>
+        <section className="mt-10">
+          <h2 className="mb-4 text-lg font-semibold text-foreground/80">
+            Popular series now
+          </h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+            {series.map((item) => (
+              <TitleCard key={`${item.mediaType}-${item.id}`} item={item} region={region} />
+            ))}
+          </div>
+        </section>
+      </>
     );
   }
 
