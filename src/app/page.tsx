@@ -5,7 +5,7 @@ import { RegionSelect } from "@/components/RegionSelect";
 import { TitleCard } from "@/components/TitleCard";
 import { ClassicCard } from "@/components/ClassicCard";
 import {
-  getPopularTitles,
+  getTrendingTitles,
   normalizeRegion,
   searchTitles,
   TmdbConfigError,
@@ -72,14 +72,14 @@ async function Results({ searchParams }: Pick<PageProps<'/'>, "searchParams">) {
 
   if (!query) {
     const [movies, series] = await Promise.all([
-      getPopularTitles("movie"),
-      getPopularTitles("tv"),
+      getTrendingTitles("movie"),
+      getTrendingTitles("tv"),
     ]);
     return (
       <>
         <section>
           <h2 className="mb-4 text-lg font-semibold text-foreground/80">
-            Popular movies now
+            Trending movies this week
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {movies.map((item) => (
@@ -89,7 +89,7 @@ async function Results({ searchParams }: Pick<PageProps<'/'>, "searchParams">) {
         </section>
         <section className="mt-10">
           <h2 className="mb-4 text-lg font-semibold text-foreground/80">
-            Popular series now
+            Trending series this week
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {series.map((item) => (

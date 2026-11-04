@@ -148,14 +148,18 @@ export async function searchTitles(query: string): Promise<SearchResult[]> {
     .filter((item): item is SearchResult => item !== null);
 }
 
-/** Popular titles for the landing page, per media type. */
-export async function getPopularTitles(type: MediaType): Promise<SearchResult[]> {
+/**
+ * Titles trending on TMDB this week — an active "being watched right now"
+ * signal (7-day window), unlike the slow-moving /popular score that is
+ * dominated by library titles' accumulated ratings.
+ */
+export async function getTrendingTitles(type: MediaType): Promise<SearchResult[]> {
   "use cache";
   cacheLife("hours");
 
   const data = await tmdbFetch<{
     results: Parameters<typeof normalizeSearchItem>[0][];
-  }>(`/${type}/popular`);
+  }>(`/trending/${type}/week`);
 
   return (data.results ?? [])
     .map((raw) => normalizeSearchItem({ ...raw, media_type: type }))
