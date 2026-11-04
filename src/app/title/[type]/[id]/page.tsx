@@ -44,7 +44,7 @@ async function TitleContent({ params, searchParams }: TitlePageProps) {
   try {
     // DB snapshot first (nightly sync); live TMDB fetch as fallback.
     const stored = getStoredAvailability(mediaType, id, region);
-    if (!stored) dbDebug = JSON.stringify(getDbDebug());
+    if (!stored) dbDebug = JSON.stringify(getDbDebug(mediaType, id, region));
     [details, credits] = await Promise.all([
       getTitle(mediaType, id),
       getCredits(mediaType, id),
