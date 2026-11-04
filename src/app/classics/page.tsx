@@ -66,15 +66,16 @@ async function ClassicsSearch({
 async function ClassicFilms({
   searchParams,
 }: Pick<PageProps<'/classics'>, "searchParams">) {
-  const { q } = await searchParams;
+  const { q, page: rawPage } = await searchParams;
   const query = typeof q === "string" ? q.trim() : "";
+  const page = Math.max(1, Math.min(20, Number.parseInt(String(rawPage ?? "1"), 10) || 1));
 
   let films: ClassicFilm[] = [];
   let failed = false;
   try {
     films = query
       ? await searchClassicFilms(query, 24)
-      : await getClassicFilms();
+      : await getClassicFilms(page);
   } catch {
     failed = true;
   }
@@ -110,20 +111,49 @@ async function ClassicFilms({
 
       {films.length === 0 ? (
         <div className="py-8 text-center text-sm text-foreground/50">
-          <p>No free classics found for “{query}”.</p>
-          <Link
-            href={`/?q=${encodeURIComponent(query)}`}
-            className="mt-2 inline-block text-sky-400 transition hover:text-sky-300"
-          >
-            Search everything for “{query}” →
-          </Link>
+          <p>
+            {query
+              ? `No free classics found for “${query}”.`
+              : "No films on this page — try the previous one."}
+          </p>
+          {query && (
+            <Link
+              href={`/?q=${encodeURIComponent(query)}`}
+              className="mt-2 inline-block text-sky-400 transition hover:text-sky-300"
+            >
+              Search everything for “{query}” →
+            </Link>
+          )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {films.map((film) => (
-            <ClassicCard key={film.identifier} film={film} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+            {films.map((film) => (
+              <ClassicCard key={film.identifier} film={film} />
+            ))}
+          </div>
+
+          {!query && (
+            <div className="mt-8 flex justify-center gap-4 text-sm">
+              {page > 1 && (
+                <Link
+                  href={`/classics?page=${page - 1}`}
+                  className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 transition hover:border-sky-400/50"
+                >
+                  ← Previous
+                </Link>
+              )}
+              {films.length >= 20 && (
+                <Link
+                  href={`/classics?page=${page + 1}`}
+                  className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 transition hover:border-sky-400/50"
+                >
+                  Next page →
+                </Link>
+              )}
+            </div>
+          )}
+        </>
       )}
     </section>
   );

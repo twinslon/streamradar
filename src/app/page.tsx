@@ -87,8 +87,13 @@ async function Results({ searchParams }: Pick<PageProps<'/'>, "searchParams">) {
             Trending movies this week
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {movies.map((item) => (
-              <TitleCard key={`${item.mediaType}-${item.id}`} item={item} region={region} />
+            {movies.map((item, index) => (
+              <TitleCard
+                key={`${item.mediaType}-${item.id}`}
+                item={item}
+                region={region}
+                priority={index < 4}
+              />
             ))}
           </div>
         </section>

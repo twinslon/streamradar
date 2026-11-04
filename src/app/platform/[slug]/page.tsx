@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { RegionSelect } from "@/components/RegionSelect";
 import { TitleCard } from "@/components/TitleCard";
 import {
@@ -16,6 +17,13 @@ import { normalizeRegion, REGIONS } from "@/lib/regions";
 type PlatformPageProps = PageProps<'/platform/[slug]'>;
 
 const SLUG_PATTERN = /^[a-z0-9-]{2,32}$/;
+
+export async function generateMetadata({
+  params,
+}: PageProps<'/platform/[slug]'>): Promise<Metadata> {
+  const { slug } = await params;
+  return { title: `${slugToLabel(slug)} — what's streaming` };
+}
 
 export default function PlatformPage(props: PlatformPageProps) {
   return (

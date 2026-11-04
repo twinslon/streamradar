@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { RegionSelect } from "@/components/RegionSelect";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import {
@@ -19,6 +20,34 @@ import { REGIONS, normalizeRegion } from "@/lib/regions";
 import { findArchiveCopy, type ArchiveMatch } from "@/lib/archive";
 
 type TitlePageProps = PageProps<'/title/[type]/[id]'>;
+
+export async function generateMetadata({
+  params,
+}: PageProps<'/title/[type]/[id]'>): Promise<Metadata> {
+  const { type, id } = await params;
+  if ((type !== "movie" && type !== "tv") || !/^\d+$/.test(id)) return {};
+
+  try {
+    const details = await getTitle(type, id);
+    const yearSuffix = details.year ? ` (${details.year})` : "";
+    const description = details.overview
+      ? details.overview.slice(0, 300)
+      : `Find out where ${details.title} is streaming.`;
+    const poster = imageUrl(details.posterPath, "w780") ?? undefined;
+
+    return {
+      title: `${details.title}${yearSuffix}`,
+      description,
+      openGraph: {
+        title: `${details.title}${yearSuffix} — where to watch`,
+        description,
+        images: poster ? [poster] : undefined,
+      },
+    };
+  } catch {
+    return {};
+  }
+}
 
 export default function TitlePage(props: TitlePageProps) {
   return (

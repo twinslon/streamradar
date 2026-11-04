@@ -3,7 +3,16 @@ import Link from "next/link";
 import { imageUrl } from "@/lib/images";
 import type { SearchResult } from "@/lib/tmdb";
 
-export function TitleCard({ item, region }: { item: SearchResult; region: string }) {
+export function TitleCard({
+  item,
+  region,
+  priority = false,
+}: {
+  item: SearchResult;
+  region: string;
+  /** Above-the-fold cards should set this for a faster LCP. */
+  priority?: boolean;
+}) {
   const poster = imageUrl(item.posterPath, "w342");
   const typeLabel = item.mediaType === "movie" ? "Movie" : "Series";
 
@@ -19,6 +28,7 @@ export function TitleCard({ item, region }: { item: SearchResult; region: string
             alt={`Poster for ${item.title}`}
             fill
             sizes="(min-width: 1024px) 180px, (min-width: 640px) 30vw, 45vw"
+            priority={priority}
             className="object-cover transition group-hover:scale-[1.03]"
           />
         ) : (
