@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { imageUrl, type SearchResult } from "@/lib/tmdb";
+import { imageUrl } from "@/lib/images";
+import type { SearchResult } from "@/lib/tmdb";
 
 export function TitleCard({ item, region }: { item: SearchResult; region: string }) {
   const poster = imageUrl(item.posterPath, "w342");

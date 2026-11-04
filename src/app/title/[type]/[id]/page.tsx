@@ -3,16 +3,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { RegionSelect } from "@/components/RegionSelect";
+import { WatchlistButton } from "@/components/WatchlistButton";
 import {
   getWatchProviders,
   getCredits,
   getTitle,
-  imageUrl,
   TmdbConfigError,
   type Provider,
   type TitleDetails,
   type WatchInfo,
 } from "@/lib/tmdb";
+import { imageUrl } from "@/lib/images";
 import { getStoredAvailability } from "@/lib/db";
 import { REGIONS, normalizeRegion } from "@/lib/regions";
 import { findArchiveCopy, type ArchiveMatch } from "@/lib/archive";
@@ -153,6 +154,14 @@ async function TitleContent({ params, searchParams }: TitlePageProps) {
               {details.overview}
             </p>
           )}
+
+          <WatchlistButton
+            mediaType={details.mediaType}
+            tmdbId={details.id}
+            title={details.title}
+            year={details.year}
+            posterPath={details.posterPath}
+          />
         </div>
       </div>
 

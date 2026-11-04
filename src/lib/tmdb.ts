@@ -1,9 +1,9 @@
 import { cacheLife } from "next/cache";
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
-const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 
 export { REGIONS, normalizeRegion } from "./regions";
+export { imageUrl } from "./images";
 
 export class TmdbConfigError extends Error {
   constructor() {
@@ -75,12 +75,6 @@ export interface CastMember {
 export interface CreditsInfo {
   cast: CastMember[];
   directors: string[];
-}
-
-/** Build a TMDB image URL for a poster/backdrop/logo path. */
-export function imageUrl(path: string | null, size: string): string | null {
-  if (!path) return null;
-  return `${IMAGE_BASE_URL}/${size}${path}`;
 }
 
 async function tmdbFetch<T>(

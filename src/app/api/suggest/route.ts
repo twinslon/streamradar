@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { imageUrl, searchTitles } from "@/lib/tmdb";
+import { searchTitles } from "@/lib/tmdb";
+import { imageUrl } from "@/lib/images";
 import { searchClassicFilms } from "@/lib/archive";
 
 export async function GET(request: NextRequest) {

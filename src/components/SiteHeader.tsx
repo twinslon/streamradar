@@ -1,5 +1,11 @@
 import Link from "next/link";
 
+const NAV_LINKS = [
+  { href: "/classics", label: "🎞 Classics" },
+  { href: "/watchlist", label: "＋ Watchlist" },
+  { href: "/", label: "Search" },
+] as const;
+
 export function SiteHeader() {
   return (
     <header className="border-b border-white/10 bg-white/[0.03]">
@@ -13,12 +19,15 @@ export function SiteHeader() {
           </span>
         </Link>
         <nav className="flex items-center gap-5 text-sm text-foreground/70">
-          <Link href="/classics" className="transition hover:text-emerald-300">
-            🎞 Classics
-          </Link>
-          <Link href="/" className="transition hover:text-sky-300">
-            Search
-          </Link>
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="transition hover:text-sky-300"
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
       </div>
     </header>

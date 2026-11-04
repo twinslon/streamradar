@@ -8,8 +8,8 @@ import {
   discoverByProvider,
   getRegionProviders,
   TmdbConfigError,
-  imageUrl,
 } from "@/lib/tmdb";
+import { imageUrl } from "@/lib/images";
 import { resolvePlatform, getCuratedPlatforms } from "@/lib/providers";
 import { normalizeRegion, REGIONS } from "@/lib/regions";
 
