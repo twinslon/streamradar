@@ -13,7 +13,7 @@ import {
   type TitleDetails,
   type WatchInfo,
 } from "@/lib/tmdb";
-import { getStoredAvailability } from "@/lib/db";
+import { getStoredAvailability, getDbDebug } from "@/lib/db";
 import { REGIONS, normalizeRegion } from "@/lib/regions";
 import { findArchiveCopy, type ArchiveMatch } from "@/lib/archive";
 
