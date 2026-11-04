@@ -45,9 +45,19 @@ Open http://localhost:3000.
 
 ## Roadmap
 
-- [ ] Browse by platform ("new on Netflix this month")
+Done:
+- [x] Browse by platform — `/platform/netflix?region=BG`, dynamic per-region provider resolution
 - [x] Nightly availability sync into SQLite (GitHub Action) — trending titles
-      × BG/US snapshotted daily; pages read the DB first, live TMDB as
-      fallback (`data-provider-source` marker on title pages shows which)
-- [ ] Personal watchlist (diffs over the nightly snapshots + notifications)
-- [ ] "Notify me when X arrives on platform Y" (Home Assistant integration)
+      × BG/US; pages read the DB first, live TMDB as fallback
+- [x] Personal watchlist with anonymous share codes (Upstash Redis)
+- [x] "Recently changed on streaming" — daily diff of provider snapshots
+- [x] Public-domain classics section, searchable, with inline players
+- [x] Typeahead search across TMDB + Internet Archive
+
+Next up:
+- [ ] Per-title SEO metadata + OG share images
+- [ ] Classics pagination + TMDB enrichment of player pages
+- [ ] Generic notifications via browser web push (provider-agnostic)
+- [ ] Person pages (clickable cast filmographies)
+- [ ] Unit tests for the public-domain matching heuristics
+- [ ] sitemap.xml / robots.txt, PWA manifest, `/` search shortcut
