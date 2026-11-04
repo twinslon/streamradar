@@ -40,8 +40,14 @@ export function isValidItem(value: unknown): value is Omit<WatchlistItem, "added
 }
 
 function env(): { url: string; token: string } | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL?.trim();
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
+  // Vercel Marketplace (Upstash Redis) injects the KV_* names; direct
+  // Upstash consoles use UPSTASH_REDIS_REST_*.
+  const url = (
+    process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL
+  )?.trim();
+  const token = (
+    process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN
+  )?.trim();
   return url && token ? { url, token } : null;
 }
 
