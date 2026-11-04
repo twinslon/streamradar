@@ -1,5 +1,7 @@
 import { Suspense } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { cacheLife } from "next/cache";
 import { SearchBox } from "@/components/SearchBox";
 import { RegionSelect } from "@/components/RegionSelect";
 import { TitleCard } from "@/components/TitleCard";
@@ -9,8 +11,11 @@ import {
   normalizeRegion,
   searchTitles,
   TmdbConfigError,
+  imageUrl,
 } from "@/lib/tmdb";
 import { searchClassicFilms, type ClassicFilm } from "@/lib/archive";
+import { getCuratedPlatforms, type PlatformInfo } from "@/lib/providers";
+import { getRecentAvailabilityChanges } from "@/lib/db";
 
 export default function Home(props: PageProps<'/'>) {
   return (
@@ -97,6 +102,8 @@ async function Results({ searchParams }: Pick<PageProps<'/'>, "searchParams">) {
             ))}
           </div>
         </section>
+        <PlatformStrip region={region} />
+        <RecentChanges />
       </>
     );
   }
@@ -168,6 +175,102 @@ function resultsNote(query: string) {
       <p className="text-sm text-foreground/50">
         No streaming results for “{query}”.
       </p>
+    </section>
+  );
+}
+
+async function PlatformStrip({ region }: { region: string }) {
+  "use cache";
+  cacheLife("hours");
+
+  let platforms: PlatformInfo[] = [];
+  try {
+    platforms = await getCuratedPlatforms(region);
+  } catch {
+    return null;
+  }
+  if (platforms.length === 0) return null;
+
+  return (
+    <section className="mt-10">
+      <h2 className="mb-4 text-lg font-semibold text-foreground/80">
+        Browse by platform
+      </h2>
+      <div className="flex flex-wrap gap-2">
+        {platforms.map((platform) => {
+          const logo = imageUrl(platform.logoPath, "w92");
+          return (
+            <Link
+              key={platform.slug}
+              href={`/platform/${platform.slug}?region=${region}`}
+              className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm transition hover:border-sky-400/50 hover:bg-white/10"
+            >
+              {logo && (
+                <Image
+                  src={logo}
+                  alt=""
+                  width={20}
+                  height={20}
+                  className="rounded"
+                />
+              )}
+              {platform.label}
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+async function RecentChanges() {
+  "use cache";
+  cacheLife("hours");
+
+  const changes = getRecentAvailabilityChanges(7);
+  if (changes.length === 0) return null;
+
+  return (
+    <section className="mt-10">
+      <h2 className="mb-4 text-lg font-semibold text-foreground/80">
+        Recently changed on streaming
+      </h2>
+      <ul className="flex flex-col gap-2">
+        {changes.map((change) => (
+          <li
+            key={`${change.mediaType}-${change.tmdbId}-${change.region}`}
+            className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm"
+          >
+            <Link
+              href={`/title/${change.mediaType}/${change.tmdbId}?region=${change.region}`}
+              className="font-medium text-sky-300 transition hover:text-sky-200"
+            >
+              {change.title}
+            </Link>
+            <span className="text-xs text-foreground/40">
+              {change.region} · {change.day}
+            </span>
+            <span className="flex flex-wrap gap-1.5">
+              {change.added.map((provider) => (
+                <span
+                  key={`added-${provider.id}`}
+                  className="rounded-md bg-emerald-400/15 px-1.5 py-0.5 text-xs text-emerald-300"
+                >
+                  ＋ {provider.name}
+                </span>
+              ))}
+              {change.removed.map((provider) => (
+                <span
+                  key={`removed-${provider.id}`}
+                  className="rounded-md bg-rose-400/15 px-1.5 py-0.5 text-xs text-rose-300"
+                >
+                  − {provider.name}
+                </span>
+              ))}
+            </span>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

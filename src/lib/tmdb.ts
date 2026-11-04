@@ -58,6 +58,13 @@ export interface WatchInfo {
   buy: Provider[];
 }
 
+export interface WatchInfo {
+  justWatchLink: string | null;
+  stream: Provider[];
+  rent: Provider[];
+  buy: Provider[];
+}
+
 export interface CastMember {
   id: number;
   name: string;
@@ -223,6 +230,53 @@ export async function getTitle(type: MediaType, id: string): Promise<TitleDetail
     status: raw.status ?? null,
     creators: raw.created_by?.map((c) => c.name) ?? [],
   };
+}
+
+/** Watch providers available in a region (platform page catalog). */
+export async function getRegionProviders(region: string): Promise<
+  { id: number; name: string; logoPath: string | null }[]
+> {
+  "use cache";
+  cacheLife("hours");
+
+  const data = await tmdbFetch<{
+    results: {
+      provider_id: number;
+      provider_name: string;
+      logo_path?: string | null;
+    }[];
+  }>("/watch/providers/movie", { watch_region: region });
+
+  return (data.results ?? []).map((p) => ({
+    id: p.provider_id,
+    name: p.provider_name,
+    logoPath: p.logo_path ?? null,
+  }));
+}
+
+/** Titles on a specific provider in a region, most popular first. */
+export async function discoverByProvider(
+  type: MediaType,
+  providerId: number,
+  region: string,
+): Promise<SearchResult[]> {
+  "use cache";
+  cacheLife("hours");
+
+  const data = await tmdbFetch<{
+    results: Parameters<typeof normalizeSearchItem>[0][];
+  }>(`/discover/${type}`, {
+    with_watch_providers: String(providerId),
+    watch_region: region,
+    sort_by: "popularity.desc",
+    include_adult: "false",
+    "vote_count.gte": "20",
+  });
+
+  return (data.results ?? [])
+    .map((raw) => normalizeSearchItem({ ...raw, media_type: type }))
+    .filter((item): item is SearchResult => item !== null)
+    .slice(0, 12);
 }
 
 /** Top-billed cast + directors for a title. */
