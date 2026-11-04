@@ -6,7 +6,8 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   serverExternalPackages: ["better-sqlite3"],
   outputFileTracingIncludes: {
-    "/**": ["./data/**"],
+    "/*": ["./data/**"],
+    "/title/[type]/[id]": ["./data/**"],
   },
   images: {
     remotePatterns: [
