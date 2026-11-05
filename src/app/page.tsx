@@ -12,10 +12,15 @@ import {
   searchTitles,
   TmdbConfigError,
   imageUrl,
+  type SearchResult,
 } from "@/lib/tmdb";
 import { searchClassicFilms, type ClassicFilm } from "@/lib/archive";
 import { getCuratedPlatforms, type PlatformInfo } from "@/lib/providers";
-import { getRecentAvailabilityChanges } from "@/lib/db";
+import {
+  getRecentAvailabilityChanges,
+  getStoredAvailability,
+} from "@/lib/db";
+import { REGIONS } from "@/lib/regions";
 
 export default function Home(props: PageProps<'/'>) {
   return (
@@ -80,14 +85,38 @@ async function Results({ searchParams }: Pick<PageProps<'/'>, "searchParams">) {
       getTrendingTitles("movie"),
       getTrendingTitles("tv"),
     ]);
+
+    // Keep only titles the nightly sync knows are watchable in the selected
+    // region. Unknown titles (not synced, or region without snapshot data)
+    // stay visible — we can't prove they're unavailable.
+    const availableInRegion = (items: SearchResult[]) => {
+      let known = 0;
+      const watchable = items.filter((item) => {
+        const stored = getStoredAvailability(item.mediaType, String(item.id), region);
+        if (stored === null) return true;
+        known++;
+        return stored.stream.length + stored.rent.length + stored.buy.length > 0;
+      });
+      return { watchable: watchable.slice(0, 12), known };
+    };
+
+    const moviesResult = availableInRegion(movies);
+    const seriesResult = availableInRegion(series);
+    const regionFiltered =
+      moviesResult.known > 0 || seriesResult.known > 0;
+    const regionName =
+      REGIONS.find((r) => r.code === region)?.name ?? region;
+
     return (
       <>
         <section>
           <h2 className="mb-4 text-lg font-semibold text-foreground/80">
-            Trending movies this week
+            {regionFiltered
+              ? `Trending movies in ${regionName}`
+              : "Trending movies this week"}
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {movies.map((item, index) => (
+            {moviesResult.watchable.map((item, index) => (
               <TitleCard
                 key={`${item.mediaType}-${item.id}`}
                 item={item}
@@ -99,10 +128,12 @@ async function Results({ searchParams }: Pick<PageProps<'/'>, "searchParams">) {
         </section>
         <section className="mt-10">
           <h2 className="mb-4 text-lg font-semibold text-foreground/80">
-            Trending series this week
+            {regionFiltered
+              ? `Trending series in ${regionName}`
+              : "Trending series this week"}
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {series.map((item) => (
+            {seriesResult.watchable.map((item) => (
               <TitleCard key={`${item.mediaType}-${item.id}`} item={item} region={region} />
             ))}
           </div>

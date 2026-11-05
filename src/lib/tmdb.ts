@@ -165,7 +165,7 @@ export async function getTrendingTitles(type: MediaType): Promise<SearchResult[]
   return (data.results ?? [])
     .map((raw) => normalizeSearchItem({ ...raw, media_type: type }))
     .filter((item): item is SearchResult => item !== null)
-    .slice(0, 12);
+    .slice(0, 20);
 }
 
 interface RawDetails {
