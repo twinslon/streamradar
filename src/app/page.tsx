@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { cacheLife } from "next/cache";
 import { connection } from "next/server";
 import { SearchBox } from "@/components/SearchBox";
 import { RegionSelect } from "@/components/RegionSelect";
@@ -223,9 +222,6 @@ function resultsNote(query: string) {
 }
 
 async function PlatformStrip({ region }: { region: string }) {
-  "use cache";
-  cacheLife("hours");
-
   let platforms: PlatformInfo[] = [];
   try {
     platforms = await getCuratedPlatforms(region);
@@ -267,9 +263,6 @@ async function PlatformStrip({ region }: { region: string }) {
 }
 
 async function RecentChanges() {
-  "use cache";
-  cacheLife("hours");
-
   const changes = getRecentAvailabilityChanges(7);
   if (changes.length === 0) return null;
 
