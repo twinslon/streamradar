@@ -19,6 +19,7 @@ import { getCuratedPlatforms, type PlatformInfo } from "@/lib/providers";
 import {
   getRecentAvailabilityChanges,
   getStoredAvailability,
+  regionHasSnapshots,
 } from "@/lib/db";
 import { REGIONS } from "@/lib/regions";
 
@@ -86,24 +87,25 @@ async function Results({ searchParams }: Pick<PageProps<'/'>, "searchParams">) {
       getTrendingTitles("tv"),
     ]);
 
-    // Keep only titles the nightly sync knows are watchable in the selected
-    // region. Unknown titles (not synced, or region without snapshot data)
-    // stay visible — we can't prove they're unavailable.
+    // If we have snapshot data for this region, hard-filter: every card
+    // must be verified watchable here. Unknown titles (never synced) are
+    // excluded — trending churns daily and unsynced newcomers are usually
+    // the un-watchable ones. Regions without snapshot data keep the
+    // worldwide list.
+    const regionHasData = regionHasSnapshots(region);
     const availableInRegion = (items: SearchResult[]) => {
-      let known = 0;
       const watchable = items.filter((item) => {
         const stored = getStoredAvailability(item.mediaType, String(item.id), region);
-        if (stored === null) return true;
-        known++;
+        if (stored === null) return !regionHasData;
         return stored.stream.length + stored.rent.length + stored.buy.length > 0;
       });
-      return { watchable: watchable.slice(0, 12), known };
+      return { watchable: watchable.slice(0, 12), known: regionHasData };
     };
 
     const moviesResult = availableInRegion(movies);
     const seriesResult = availableInRegion(series);
     const regionFiltered =
-      moviesResult.known > 0 || seriesResult.known > 0;
+      moviesResult.known || seriesResult.known;
     const regionName =
       REGIONS.find((r) => r.code === region)?.name ?? region;
 

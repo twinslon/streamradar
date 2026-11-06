@@ -172,6 +172,28 @@ export function getRecentAvailabilityChanges(days = 7): AvailabilityChange[] {
 }
 
 /**
+ * Whether we have recent snapshot data for a region. When true, the
+ * landing trend sections can hard-filter to verified-watchable titles;
+ * when false (region not synced), unknown titles are kept visible.
+ */
+export function regionHasSnapshots(region: string): boolean {
+  const db = open();
+  if (!db) return false;
+  try {
+    const row = db
+      .prepare(
+        `SELECT 1 FROM availability
+         WHERE region = ? AND day >= date('now', '-2 days') AND day <= date('now')
+         LIMIT 1`,
+      )
+      .get(region);
+    return row !== undefined;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Latest provider snapshot for a title/region from the nightly sync,
  * or null when missing/stale (caller falls back to live TMDB).
  */
