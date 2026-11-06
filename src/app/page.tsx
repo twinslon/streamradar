@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cacheLife } from "next/cache";
+import { connection } from "next/server";
 import { SearchBox } from "@/components/SearchBox";
 import { RegionSelect } from "@/components/RegionSelect";
 import { TitleCard } from "@/components/TitleCard";
@@ -77,6 +78,10 @@ async function HomeSearch({
 }
 
 async function Results({ searchParams }: Pick<PageProps<'/'>, "searchParams">) {
+  // Force per-request rendering: the availability filter reflects the
+  // freshest nightly snapshot, so the landing must never serve a stale
+  // edge-cached render.
+  await connection();
   const { q, region: rawRegion } = await searchParams;
   const region = normalizeRegion(rawRegion);
   const query = typeof q === "string" ? q.trim() : "";
