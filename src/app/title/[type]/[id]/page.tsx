@@ -5,13 +5,16 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { RegionSelect } from "@/components/RegionSelect";
 import { WatchlistButton } from "@/components/WatchlistButton";
+import { TitleCard } from "@/components/TitleCard";
 import {
   getWatchProviders,
   getCredits,
   getTitle,
   getTrailer,
+  getSimilarTitles,
   TmdbConfigError,
   type Provider,
+  type SearchResult,
   type TitleDetails,
   type Trailer,
   type WatchInfo,
@@ -91,6 +94,14 @@ async function TitleContent({ params, searchParams }: TitlePageProps) {
     if (error instanceof TmdbConfigError) throw error;
     if (error instanceof Error && error.message.includes("404")) notFound();
     throw error;
+  }
+
+  // Recommendations are a nice-to-have — never fail the page for them.
+  let similar: SearchResult[] = [];
+  try {
+    similar = await getSimilarTitles(mediaType, id);
+  } catch {
+    similar = [];
   }
 
   // Free public-domain copy on the Internet Archive (movies only, best effort).
@@ -265,6 +276,21 @@ async function TitleContent({ params, searchParams }: TitlePageProps) {
           <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
             {credits.cast.map((member) => (
               <CastCard key={member.id} member={member} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {similar.length > 0 && (
+        <section className="border-t border-white/10 p-4 sm:p-6">
+          <h2 className="text-lg font-semibold">More like this</h2>
+          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+            {similar.map((item) => (
+              <TitleCard
+                key={`${item.mediaType}-${item.id}`}
+                item={item}
+                region={region}
+              />
             ))}
           </div>
         </section>

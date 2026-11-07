@@ -306,6 +306,24 @@ export async function discoverByProvider(
     .slice(0, 12);
 }
 
+/** Recommended titles ("More like this") for a title page. */
+export async function getSimilarTitles(
+  type: MediaType,
+  id: string,
+): Promise<SearchResult[]> {
+  "use cache";
+  cacheLife("hours");
+
+  const data = await tmdbFetch<{
+    results: Parameters<typeof normalizeSearchItem>[0][];
+  }>(`/${type}/${id}/recommendations`);
+
+  return (data.results ?? [])
+    .map((raw) => normalizeSearchItem({ ...raw, media_type: type }))
+    .filter((item): item is SearchResult => item !== null)
+    .slice(0, 12);
+}
+
 /** Top-billed cast + directors for a title. */
 export async function getCredits(type: MediaType, id: string): Promise<CreditsInfo> {
   "use cache";
