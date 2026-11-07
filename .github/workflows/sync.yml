@@ -41,3 +41,13 @@ jobs:
             git commit -m "chore: nightly availability sync ($(date -u +%F))"
             git push
           )
+
+      - name: Trigger production deployment (deploy hook)
+        run: |
+          if [ -n "$DEPLOY_HOOK_URL" ]; then
+            curl -sf -X POST "$DEPLOY_HOOK_URL" > /dev/null && echo "Deploy hook triggered"
+          else
+            echo "DEPLOY_HOOK_URL not set — skipping"
+          fi
+        env:
+          DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
