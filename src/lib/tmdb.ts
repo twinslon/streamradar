@@ -226,6 +226,39 @@ export async function getTitle(type: MediaType, id: string): Promise<TitleDetail
   };
 }
 
+export interface Trailer {
+  key: string;
+  name: string;
+  site: string;
+}
+
+/** Best official trailer for a title (YouTube preferred), or null. */
+export async function getTrailer(type: MediaType, id: string): Promise<Trailer | null> {
+  "use cache";
+  cacheLife("hours");
+
+  const data = await tmdbFetch<{
+    results: {
+      key: string;
+      name: string;
+      site: string;
+      type: string;
+      official: boolean;
+    }[];
+  }>(`/${type}/${id}/videos`);
+
+  const candidates = data.results.filter(
+    (video) =>
+      video.site === "YouTube" && (video.type === "Trailer" || video.type === "Teaser"),
+  );
+  const score = (video: (typeof candidates)[number]): number =>
+    (video.type === "Trailer" ? 2 : 1) + (video.official ? 0.5 : 0);
+  candidates.sort((a, b) => score(b) - score(a));
+
+  const best = candidates[0];
+  return best ? { key: best.key, name: best.name, site: "YouTube" } : null;
+}
+
 /** Watch providers available in a region (platform page catalog). */
 export async function getRegionProviders(region: string): Promise<
   { id: number; name: string; logoPath: string | null }[]

@@ -9,9 +9,11 @@ import {
   getWatchProviders,
   getCredits,
   getTitle,
+  getTrailer,
   TmdbConfigError,
   type Provider,
   type TitleDetails,
+  type Trailer,
   type WatchInfo,
 } from "@/lib/tmdb";
 import { imageUrl } from "@/lib/images";
@@ -69,13 +71,15 @@ async function TitleContent({ params, searchParams }: TitlePageProps) {
   let details: TitleDetails;
   let watch: WatchInfo;
   let watchSource: "db" | "tmdb" = "tmdb";
+  let trailer: Trailer | null = null;
   let credits: Awaited<ReturnType<typeof getCredits>>;
   try {
     // DB snapshot first (nightly sync); live TMDB fetch as fallback.
     const stored = getStoredAvailability(mediaType, id, region);
-    [details, credits] = await Promise.all([
+    [details, credits, trailer] = await Promise.all([
       getTitle(mediaType, id),
       getCredits(mediaType, id),
+      getTrailer(mediaType, id).catch(() => null),
     ]);
     if (stored) {
       watch = stored;
@@ -238,6 +242,22 @@ async function TitleContent({ params, searchParams }: TitlePageProps) {
           </p>
         )}
       </section>
+
+      {trailer && (
+        <section className="border-t border-white/10 p-4 sm:p-6">
+          <h2 className="text-lg font-semibold">Trailer</h2>
+          <div className="mt-4 aspect-video overflow-hidden rounded-2xl border border-white/10 bg-black">
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${trailer.key}?rel=0`}
+              title={trailer.name || `Trailer for ${details.title}`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              loading="lazy"
+              className="h-full w-full"
+            />
+          </div>
+        </section>
+      )}
 
       {credits.cast.length > 0 && (
         <section className="border-t border-white/10 p-4 sm:p-6">
