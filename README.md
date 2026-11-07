@@ -56,6 +56,8 @@ Done:
 - [x] Per-title SEO metadata + OG share images
 - [x] Classics pagination ("Popular with viewers" pages 1–20)
 - [x] sitemap.xml / robots.txt
+- [x] Trailer embeds on title pages (YouTube, where available)
+- [x] "More like this" recommendations row
 
 Next up:
 - [ ] TMDB enrichment of classics player pages (match IA film → TMDB entry
